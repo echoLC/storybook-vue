@@ -1,5 +1,7 @@
 <template>
-  <div :id="id"></div>
+  <div class="container">
+    <div :id="id"></div>
+  </div>  
 </template>
 
 <script>
@@ -81,6 +83,13 @@ export default {
     initEditor () {
       this.editor = new Editor({
         el: document.getElementById(this.id),
+        hooks: {
+          addImageBlobHook (blob, callback) {
+            // toDo上传图片到七牛
+            console.log(blob)
+            callback('http://qn.feijing88.com/products/icon_product_1.png', 'alt text')
+          }
+        },
         ...this.editorOptions
       })
       if (this.value) {
@@ -107,4 +116,5 @@ export default {
   }
 }
 </script>
+
 
