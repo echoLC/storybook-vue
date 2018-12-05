@@ -1,12 +1,12 @@
-import { storiesOf } from '@storybook/vue';
+import { storiesOf } from '@storybook/vue'
 // import { action } from '@storybook/addon-actions';
 
-import MarkdownEditor from './Index.vue';
+import MarkdownEditor from './src/MarkdownEditor.vue'
 
-const defaultValue = '## 标题';
+const defaultValue = '## 标题'
 const defaultOptions = {
   toolbarItems: ['heading', 'bold', 'italic']
-};
+}
 
 storiesOf('MarkdownEditor', module)
   .add('default editor', () => ({
@@ -31,4 +31,4 @@ storiesOf('MarkdownEditor', module)
     components: { MarkdownEditor },
     template: `<markdown-editor height="500px"></markdown-editor>`,
     data: () => ({ defaultOptions })
-  }));
+  }))

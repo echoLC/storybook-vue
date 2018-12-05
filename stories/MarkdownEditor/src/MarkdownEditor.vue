@@ -10,6 +10,7 @@ import 'tui-editor/dist/tui-editor.css' // editor ui
 import 'tui-editor/dist/tui-editor-contents.css' // editor content
 import Editor from 'tui-editor'
 import defaultOptions from './defaultOptions'
+import { qiniuFactory } from './qiniu.js'
 
 export default {
   name: 'MarkdownEditor',
@@ -44,6 +45,14 @@ export default {
       type: String,
       required: false,
       default: 'zh_CN' // https://github.com/nhnent/tui.editor/tree/master/src/js/langs
+    },
+    qiniu: {
+      type: Object,
+      default: () => ({ token: 'wJVyfxRH-bu913tD5RfnsOGqQEGDELSYxmQ3pXlf:jL1L3h-yKB6XKe90UHl3tYgszUo=:eyJzY29wZSI6ImJpbmd1by1jb21tb24iLCJkZWFkbGluZSI6LTkyMjMzNzIwMzUzMTM3MjE4Nzl9', uploadDomain: '', host: 'http://qn.365rich.com/' })
+    },
+    prefix: {
+      type: String,
+      default: 'article/'
     }
   },
   data () {
@@ -81,13 +90,18 @@ export default {
   },
   methods: {
     initEditor () {
+      const self = this
       this.editor = new Editor({
         el: document.getElementById(this.id),
         hooks: {
-          addImageBlobHook (blob, callback) {
-            // toDo上传图片到七牛
-            console.log(blob)
-            callback('http://qn.feijing88.com/products/icon_product_1.png', 'alt text')
+          addImageBlobHook (file, callback) {
+            const qiniu = qiniuFactory(self.qiniu)
+            const filename = qiniu.getFilename(self.prefix, file.name)
+            qiniu.upload(file, filename).then((res) =>{
+              callback(`${self.qiniu.host}${res.data.key}`, 'alt text')
+            }).catch((err) => {
+              console.error(err)
+            })
           }
         },
         ...this.editorOptions
