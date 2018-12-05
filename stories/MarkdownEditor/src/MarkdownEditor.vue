@@ -48,7 +48,7 @@ export default {
     },
     qiniu: {
       type: Object,
-      default: () => ({ token: 'wJVyfxRH-bu913tD5RfnsOGqQEGDELSYxmQ3pXlf:jL1L3h-yKB6XKe90UHl3tYgszUo=:eyJzY29wZSI6ImJpbmd1by1jb21tb24iLCJkZWFkbGluZSI6LTkyMjMzNzIwMzUzMTM3MjE4Nzl9', uploadDomain: '', host: 'http://qn.365rich.com/' })
+      default: () => ({ token: '', uploadDomain: '', host: '' })
     },
     prefix: {
       type: String,
