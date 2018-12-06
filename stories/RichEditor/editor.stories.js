@@ -8,7 +8,7 @@ const defaultToolbar = [
   'bold italic | h2 p link | alignleft aligncenter alignright'
 ]
 
-storiesOf('rich editor', module)
+storiesOf('RichEditor', module)
   .add('default editor', () => ({
     components: { Editor },
     template: '<editor></editor>'
