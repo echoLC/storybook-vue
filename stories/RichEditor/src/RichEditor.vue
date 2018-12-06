@@ -31,10 +31,6 @@ export default {
       type: Number,
       require: false,
       default: 360
-    },
-    language: {
-      type: String,
-      default: 'zh_CN'
     }
   },
   data () {
@@ -48,7 +44,6 @@ export default {
     initTinymce () {
       const self = this
       window.tinymce.init({
-        language: this.language,
         selector: `#${this.tinymceId}`,
         height: this.height,
         body_class: 'panel-body ',
@@ -112,11 +107,11 @@ export default {
       })
     },
     getTinymceInstance () {
-      return window.tinymce.get(this.tinymiceId)
+      return window.tinymce.get(this.tinymceId)
     },
     destoryTinymce () {
       if (this.getTinymceInstance()) {
-        tinymce.destory()
+        this.getTinymceInstance().destroy()
       }
     },
     setContent(value) {
@@ -135,7 +130,6 @@ export default {
   },
   mounted () {
     this.initTinymce()
-    console.log(this.getTinymceInstance())
   },
   destroyed () {
     this.destoryTinymce()
