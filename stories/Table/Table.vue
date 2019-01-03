@@ -11,6 +11,9 @@
           <template v-if="col.render">
             <render :row="row" :column="col" :index="index" :render="col.render"/>
           </template>
+          <template v-else-if="col.slot">
+            <slot :row="row" :column="col" :index="index" :name="col.slot"/>
+          </template>
           <template v-else>{{ row[col.key] }}</template>
         </td>
       </tr>
