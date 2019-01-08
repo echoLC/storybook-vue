@@ -7,7 +7,7 @@
 </template>
 
 <script>
-let seed = 0;
+let seed = 0
 
 function getUuid () {
   return `alert_${seed}`
@@ -40,7 +40,7 @@ export default {
         if (notices[i].name === name) {
           this.notices.splice(i, 1)
           break
-        }
+        }                      
       }
     }
   }
