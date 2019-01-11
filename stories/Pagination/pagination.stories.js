@@ -4,5 +4,5 @@ import Pagination from './Pagination.vue'
 
 storiesOf('Pagination', module).add('defaultPagination', () => ({
   components: { Pagination },
-  template: `<pagination/>`
+  template: `<pagination :total="50"/>`
 }))
