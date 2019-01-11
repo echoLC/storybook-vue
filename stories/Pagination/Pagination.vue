@@ -88,6 +88,9 @@ export default {
   margin: 0;
   cursor: pointer;
 }
+.pagination-list li:hover {
+  color: #409eff;
+}
 .pagination-list li.text-primary {
   color: #409eff;
   cursor: default;
