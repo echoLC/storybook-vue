@@ -48,12 +48,12 @@ export default {
 
   watch: {
     animationType () {
-      this.carousel.setAnimation(Animation[this.animationType]())
+      this.carousel.setAnimation(Animation[this.animationType](1800))
     }
   },
 
   mounted () {
-    this.carousel = new Carousel(document.querySelector('.carousel'), Animation[this.animationType]())
+    this.carousel = new Carousel(document.querySelector('.carousel'), Animation[this.animationType](1800))
   }
 }
 </script>
