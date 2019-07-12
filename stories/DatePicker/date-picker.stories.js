@@ -11,5 +11,5 @@ storiesOf('DatePicker', module)
         date: []
       }
     },
-    template: `<date-picker v-model="date" type="daterange" format="YYYY-MM-DD"></date-picker>`
+    template: `<date-picker v-model="date" type="daterange" format="YYYY-MM-DD HH:mm:ss"></date-picker>`
   }))

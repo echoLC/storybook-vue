@@ -96,7 +96,7 @@ export default {
       }
     },
 
-     formatDate (date, format) {
+    formatDate (date, format) {
       const year = date.getFullYear()
       const month = date.getMonth()
       const day = date.getDate()
