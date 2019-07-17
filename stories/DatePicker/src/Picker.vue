@@ -64,7 +64,7 @@ export default {
     right: false
   },
   data () {
-    const time = this.get(this.value)
+    const time = this.formatDateByKey(this.value)
     return {
       pre: 'calendar',
       m: 'D',
@@ -83,7 +83,7 @@ export default {
   },
   watch: {
     value (val) {
-      const time = this.get(val)
+      const time = this.formatDateByKey(val)
       this.year = time.year
       this.month = time.month
       this.day = time.day
@@ -100,10 +100,10 @@ export default {
       return this.$parent.format
     },
     start () {
-      return this.parse(this.$parent.dates[0])
+      return this.parseToSeconds(this.$parent.dates[0])
     },
     end () {
-      return this.parse(this.$parent.dates[1])
+      return this.parseToSeconds(this.$parent.dates[1])
     },
     ys () {
       return parseInt(this.year / 10) * 10
@@ -163,7 +163,7 @@ export default {
     pad
   },
   methods: {
-    get (time) {
+    formatDateByKey (time) {
       return {
         year: time.getFullYear(),
         month: time.getMonth(),
@@ -173,13 +173,13 @@ export default {
         second: time.getSeconds()
       }
     },
-    parse (num) {
+    parseToSeconds (num) {
       return parseInt(num / 1000)
     },
     status (year, month, day, hour, minute, second, format) {
       const maxDay = new Date(year, month + 1, 0).getDate()
       const time = new Date(year, month, day > maxDay ? maxDay : day, hour, minute, second)
-      const t = this.parse(time)
+      const t = this.parseToSeconds(time)
       const f = this.$parent.formatDate
       const classObj = {}
       let flag = false
@@ -246,51 +246,51 @@ export default {
       if (this.canSelected(event)) {
         this.showYears = this.m === 'Y'
         this.year = year
-        this.showYears && this.ok('y')
+        this.showYears && this.confirmSelect('y')
       }
     },
     selectMonth (month, event) {
       if (this.canSelected(event)) {
         this.showMonths = this.m === 'M'
         this.month = month
-        this.showMonths && this.ok('m')
+        this.showMonths && this.confirmSelect('m')
       }
     },
     selectDay (i, j, event) {
       if (this.canSelected(event)) {
         this.day = j.i
-        this.ok(j)
+        this.confirmSelect(j)
       }
     },
     selectHour (hour, event) {
       if (this.canSelected(event)) {
         this.showHours = false
         this.hour = hour
-        this.ok('h')
+        this.confirmSelect('h')
       }
     },
     selectMinute (minute, event) {
       if (this.canSelected(event)) {
         this.showMinutes = false
         this.minute = minute
-        this.ok('h')
+        this.confirmSelect('h')
       }
     },
     selectSecond (second, event) {
       if (this.canSelected(event)) {
         this.showSeconds = false
         this.second = second
-        this.ok('h')
+        this.confirmSelect('h')
       }
     },
-    ok (info) {
+    confirmSelect (info) {
       let year = ''
       let month = ''
       let day = ''
       info && info.n && this.nextMonth()
       info && info.p && this.preMonth()
       if (info === 'h') {
-        const time = this.get(this.value)
+        const time = this.formatDateByKey(this.value)
         year = time.year
         month = time.month
       } else if (info === 'm' || info === 'y') {
@@ -301,7 +301,7 @@ export default {
         this.$parent.dates[1] = _time
       }
       this.$emit('input', _time)
-      this.$parent.ok(info === 'h')
+      this.$parent.confirmSelect(info === 'h')
     }
   },
   mounted () {

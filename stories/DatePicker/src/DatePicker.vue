@@ -11,7 +11,7 @@
         :placeholder="startDatePlaceholder"/>
       <span class="separator">{{ rangeSeparator }}</span> 
       <input readonly 
-        :value="startDateText" 
+        :value="endDateText" 
         :disabled="disabled"
         class="end-input"
         :class="inputClass" 
@@ -19,7 +19,7 @@
       <a class="datepicker-close" @click.stop="clear"></a>
     </div>
     <transition name="datepicker-anim">
-      <div class="datepicker-popup" :class="[popupClass]" tabindex="-1" v-if="show">
+      <div class="date-picker-popup" :class="[popupClass]" tabindex="-1" v-if="show">
         <template v-if="type === 'daterange'">
           <picker-calendar v-model="dates[0]" :left="true"></picker-calendar>
           <picker-calendar v-model="dates[1]" :right="true"></picker-calendar>
@@ -99,6 +99,8 @@ export default {
 
     inputClass: [String],
 
+    popupClass: String,
+
     local: {
       type: Object,
       default: () => (DEFAULT_LOCAL)
@@ -126,6 +128,10 @@ export default {
       this.show = this.$el.contains(e.target) && !this.disabled
     },
 
+    getSelectedVal () {
+      return Array.isArray(this.value) ? this.dates : this.dates[0]
+    },
+
     initValue (val) {
       const now = new Date()
       if (Array.isArray(val)) {
@@ -133,6 +139,13 @@ export default {
       } else {
         return val ? [new Date(val)] : [now]
       }
+    },
+
+    confirmSelect (leaveOpened) {
+      this.$emit('input', this.getSelectedVal())
+      !leaveOpened && !this.showButtons && setTimeout(() => {
+        this.show = this.type === 'daterange'
+      })
     },
 
     formatDate (date, format) {
