@@ -1,13 +1,38 @@
 <template>
   <div class="date-picker">
-    <input readonly 
-      :value="dateText" 
-      :disabled="disabled"
-      :class="
-      [show ? 'focus' : '', 
-        type === 'daterange' ? 'range-input' : '',
-        inputClass]" 
-      :placeholder="placeholder"/>
+    <div 
+      class="date-picker__input"
+      :class="[this.show ? 'focus' : '']">
+      <input readonly 
+        :value="startDateText" 
+        :disabled="disabled"
+        class="start-input"
+        :class="inputClass" 
+        :placeholder="startDatePlaceholder"/>
+      <span class="separator">{{ rangeSeparator }}</span> 
+      <input readonly 
+        :value="startDateText" 
+        :disabled="disabled"
+        class="end-input"
+        :class="inputClass" 
+        :placeholder="endDatePlaceholder"/>   
+      <a class="datepicker-close" @click.stop="clear"></a>
+    </div>
+    <transition name="datepicker-anim">
+      <div class="datepicker-popup" :class="[popupClass]" tabindex="-1" v-if="show">
+        <template v-if="type === 'daterange'">
+          <picker-calendar v-model="dates[0]" :left="true"></picker-calendar>
+          <picker-calendar v-model="dates[1]" :right="true"></picker-calendar>
+        </template>
+        <template v-else>
+          <vue-datepicker-local-calendar v-model="dates[0]"></vue-datepicker-local-calendar>
+        </template>
+        <div v-if="showButtons" class="datepicker__buttons">
+          <button @click.prevent.stop="cancel" class="datepicker__button-cancel">{{ local.cancelTip }}</button>
+          <button @click.prevent.stop="submit" class="datepicker__button-select">{{ local.submitTip }}</button>
+        </div>
+      </div>
+    </transition>  
   </div>
 </template>
 
@@ -15,7 +40,13 @@
 import { pad } from './utils'
 import { DEFAULT_LOCAL } from './utils/constants'
 
+import PickerCalendar from './Picker'
+
 export default {
+  components: {
+    PickerCalendar
+  },
+
   props: {
     value: [String, Date, Array],
 
@@ -29,9 +60,14 @@ export default {
       default: false
     },
 
-    placeholder: {
+    startDatePlaceholder: {
       type: String,
-      default: '请选择日期'
+      default: '请选择开始日期'
+    },
+
+    endDatePlaceholder: {
+      type: String,
+      default: '请选择结束日期'
     },
 
     format: {
@@ -70,8 +106,11 @@ export default {
   },
 
   computed: {
-    dateText () {
-      return this.dates.map(date => this.formatDate(date)).join(` ${this.rangeSeparator} `)
+    startDateText () {
+      return this.formatDate(this.dates[0])
+    },
+    endDateText () {
+      return this.type === 'daterange' ? this.formatDate(this.dates[1]) : ''
     }
   },
 
@@ -140,11 +179,35 @@ export default {
 
 <style scoped>
 .date-picker {
-  display: inline-block;
   position: relative;
 }
 
-.date-picker:before {
+.date-picker__input {
+  display: flex;
+  align-items: center;
+  position: relative;
+  border: 1px solid #e5e5e5;
+  width: 400px;
+}
+
+.date-picker__input.focus {
+  border-color: #3bb4f2;
+  -webkit-box-shadow: 0 0 5px rgba(59, 180, 242, .3);
+  box-shadow: 0 0 5px rgba(59, 180, 242, .3);
+}
+
+.start-input:before {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 34px;
+  height: 100%;
+  top: 0;
+  right: 0;
+  background: url('data:image/svg+xml;base64,PHN2ZyBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiPjxwYXRoIGQ9Ik01NjQgMTgwLjJINDQ4Yy04LjMgMC0xNS02LjctMTUtMTVzNi43LTE1IDE1LTE1aDExNmM4LjIgMCAxNSA2LjcgMTUgMTVzLTYuOCAxNS0xNSAxNXoiIGZpbGw9IiM5ODk4OTgiLz48cGF0aCBkPSJNOTQ1IDk1Mi4ySDgxLjJjLTguMiAwLTE1LTYuNy0xNS0xNVYxNjIuOGMwLTguMyA2LjgtMTUgMTUtMTVIMjk0YzguMiAwIDE1IDYuNyAxNSAxNXMtNi44IDE1LTE1IDE1SDk2LjJ2NzQ0LjRIOTMwVjE3Ny44SDcxMy42Yy04LjMgMC0xNS02LjctMTUtMTVzNi43LTE1IDE1LTE1SDk0NWM4LjIgMCAxNSA2LjcgMTUgMTV2Nzc0LjRjMCA4LjMtNi44IDE1LTE1IDE1eiIgZmlsbD0iIzk4OTg5OCIvPjxwYXRoIGQ9Ik0zMzMuMyA1NTFIMjE2Yy04LjIgMC0xNS02LjgtMTUtMTVzNi44LTE1IDE1LTE1aDExNy4zYzguMyAwIDE1IDYuNiAxNSAxNXMtNi43IDE1LTE1IDE1em0yMzAuMyAwSDQ0Ni4zYy04LjMgMC0xNS02LjgtMTUtMTVzNi43LTE1IDE1LTE1aDExNy4zYzguMiAwIDE1IDYuNiAxNSAxNXMtNi44IDE1LTE1IDE1em0yMzAuMiAwSDY3Ni42Yy04LjMgMC0xNS02LjgtMTUtMTVzNi43LTE1IDE1LTE1aDExNy4yYzguMyAwIDE1IDYuNiAxNSAxNXMtNi43IDE1LTE1IDE1ek0zMzMuMyA3NDBIMjE2Yy04LjIgMC0xNS02LjgtMTUtMTVzNi44LTE1IDE1LTE1aDExNy4zYzguMyAwIDE1IDYuNiAxNSAxNXMtNi43IDE1LTE1IDE1em0yMzAuMyAwSDQ0Ni4zYy04LjMgMC0xNS02LjgtMTUtMTVzNi43LTE1IDE1LTE1aDExNy4zYzguMiAwIDE1IDYuNiAxNSAxNXMtNi44IDE1LTE1IDE1em0yMzAuMiAwSDY3Ni42Yy04LjMgMC0xNS02LjgtMTUtMTVzNi43LTE1IDE1LTE1aDExNy4yYzguMyAwIDE1IDYuNiAxNSAxNXMtNi43IDE1LTE1IDE1ek0zNzAuOCAyNTguNmMtOC4zIDAtMTUtNi43LTE1LTE1Vjg2LjhjMC04LjIgNi43LTE1IDE1LTE1czE1IDYuOCAxNSAxNXYxNTYuOGMwIDguMy02LjcgMTUtMTUgMTV6bTI3MC4yIDBjLTguMyAwLTE1LTYuNy0xNS0xNVY4Ni44YzAtOC4yIDYuNy0xNSAxNS0xNXMxNSA2LjggMTUgMTV2MTU2LjhjMCA4LjMtNi43IDE1LTE1IDE1ek05NDUgMzcyLjJIODEuMmMtOC4yIDAtMTUtNi43LTE1LTE1czYuOC0xNSAxNS0xNUg5NDVjOC4yIDAgMTUgNi43IDE1IDE1cy02LjggMTUtMTUgMTV6IiBmaWxsPSIjOTg5ODk4Ii8+PC9zdmc+') no-repeat 50% 50%;
+}
+
+.end-input:before {
   content: '';
   display: block;
   position: absolute;
@@ -193,33 +256,25 @@ export default {
   background-color: #afafaf;
 }
 
-.date-picker > input {
+.date-picker > .date-picker__input > input {
+  position: relative;
+  text-align: center;
   color: #666;
+  border: 0;
   transition: all 200ms ease;
-  border: 1px solid #e5e5e5;
   height: 34px;
   box-sizing: border-box;
   outline: none;
   padding: 0 34px 0 12px;
   font-size: 14px;
-  width: 100%;
+  width: 200px;
   user-select: none;
   -ms-user-select: none;
   -moz-user-select: none;
   -webkit-user-select: none;
 }
 
-.date-picker > input.focus {
-  border-color: #3bb4f2;
-  -webkit-box-shadow: 0 0 5px rgba(59, 180, 242, .3);
-  box-shadow: 0 0 5px rgba(59, 180, 242, .3);
-}
-
-.date-picker > input.range-input {
-  min-width: 244px;
-}
-
-.date-picker > input:disabled {
+.date-picker > .date-picker__input > input:disabled {
   cursor: not-allowed;
   background-color: #ebebe4;
   border-color: #e5e5e5;
@@ -247,10 +302,6 @@ export default {
 .date-picker-inline {
   position: relative;
   margin-top: 0;
-}
-
-.date-picker-range {
-  min-width: 325px
 }
 
 .date-picker-range .date-picker-popup{
