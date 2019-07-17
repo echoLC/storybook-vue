@@ -17,30 +17,69 @@
     <a :class="`${pre}-next-year-btn`" v-show="!showYears" @click="nextYear">»</a>
     <a :class="`${pre}-next-decade-btn`" v-show="showYears" @click="nextTenYears">»</a>
   </div>
+
+  <!--各种日期选择面板-->
   <div :class="`${pre}-body`">
+    <!--date的选择面板-->
     <div :class="`${pre}-days`">
-      <a :class="`${pre}-week`" v-for="i in local.weeks"  :key="i">{{ i }}</a>
-      <a v-for="(day, i) in days" @click="selectDay(i, day, $event)" :class="[(day.p || day.n)?`${pre}-date-out`:'',status(day.y, day.m, day.i, hour, minute, second, 'YYYYMMDD')]" :key="i">{{ day.i }}</a>
+      <a :class="`${pre}-week`" v-for="week in local.weeks"  :key="week">{{ week }}</a>
+      <a
+        :class="getCellDayClasses(day)" 
+        v-for="(day, index) in days" 
+        @click="selectDay(index, day, $event)" 
+        :key="index">{{ day.i }}</a>
     </div>
-    <div :class="`${pre}-months`" v-show="showMonths">
-      <a v-for="(monthText, month) in local.months" @click="selectMonth(month, $event)" :class="[status(year, month, day, hour, minute, second, 'YYYYMM')]" :key="month">{{ monthText }}</a>
-    </div>
+
+     <!--year的选择面板-->
     <div :class="`${pre}-years`" v-show="showYears">
-      <a v-for="(i, j) in years" @click="selectYear(i, $event)" :class="[(j === 0 || j === 11)?`${pre}-date-out`:'',status(i, month, day, hour, minute, second, 'YYYY')]" :key="j">{{ i }}</a>
+      <a 
+        :class="getCellYearClasses(index, year)" 
+        v-for="(year, index) in years" 
+        @click="selectYear(year, $event)" 
+        :key="year">{{ year }}</a>
     </div>
+
+    <!--month的选择面板-->
+    <div :class="`${pre}-months`" v-show="showMonths">
+      <a
+        :class="[generateCellClasses(year, month, day, hour, minute, second, 'YYYYMM')]" 
+        v-for="(monthText, month) in local.months" 
+        @click="selectMonth(month, $event)" 
+        :key="month">{{ monthText }}</a>
+    </div>
+  
+    <!--hour的选择面板-->
     <div :class="`${pre}-hours`" v-show="showHours">
       <div :class="`${pre}-title`">{{ local.hourTip }}</div>
-      <a v-for="(j, i) in 24" @click="selectHour(i, $event)" :class="[status(year, month, day, i, minute, second, 'YYYYMMDDHH')]" :key="i">{{ i }}</a>
+      <a 
+        :class="[generateCellClasses(year, month, day, i, minute, second, 'YYYYMMDDHH')]"
+        v-for="(j, i) in 24" 
+        @click="selectHour(i, $event)" 
+        :key="i">{{ i }}</a>
     </div>
+
+    <!--minute的选择面板-->
     <div :class="`${pre}-minutes`" v-show="showMinutes">
       <div :class="`${pre}-title`">{{ local.minuteTip }}</div>
-      <a v-for="(j, i) in 60" @click="selectMinute(i, $event)" :class="[status(year,month,day,hour,i,second,'YYYYMMDDHHmm')]" :key="i">{{ i }}</a>
+      <a 
+        :class="[generateCellClasses(year, month, day, hour, i, second, 'YYYYMMDDHHmm')]" 
+        v-for="(j, i) in 60" 
+        @click="selectMinute(i, $event)" 
+        :key="i">{{ i }}</a>
     </div>
+
+    <!--second的选择面板-->
     <div :class="`${pre}-seconds`" v-show="showSeconds">
       <div :class="`${pre}-title`">{{ local.secondTip }}</div>
-      <a v-for="(j, i) in 60" @click="selectSecond(i, $event)" :class="[status(year,month,day,hour,minute,i,'YYYYMMDDHHmmss')]" :key="i">{{ i }}</a>
+      <a 
+        :class="[generateCellClasses(year, month, day, hour, minute, i, 'YYYYMMDDHHmmss')]" 
+        v-for="(j, i) in 60" 
+        @click="selectSecond(i, $event)" 
+        :key="i">{{ i }}</a>
     </div>
   </div>
+  
+  <!--HH:mm:ss展示面板-->
   <div :class="`${pre}-foot`" v-if="formateType === 'H'">
     <div :class="`${pre}-hour`">
       <a :title="local.hourTip" @click="showHoursPicker" :class="{ on:showHours }">{{ hour | pad }}</a>
@@ -188,10 +227,28 @@ export default {
         second: time.getSeconds()
       }
     },
+    getCellDayClasses (day) {
+      const classes = []
+      if (day.p || day.n) {
+        classes.push (`${this.pre}-date-out`)
+      }
+      const selectedClass = this.generateCellClasses(day.y, day.m, day.i, this.hour, this.minute, this.second, 'YYYYMMDD')
+      classes.push(selectedClass)
+      return classes
+    },
+    getCellYearClasses (year, index) {
+      const classes = []
+      if ( year === 0 || year === 1) {
+        classes.push(`${this.pre}-date-out`)
+      }
+      const selectedClass = this.generateCellClasses(index, this.month, this.day, this.hour, this.minute, this.second, 'YYYY')
+      classes.push(selectedClass)
+      return classes
+    },
     parseToSeconds (num) {
       return parseInt(num / 1000)
     },
-    status (year, month, day, hour, minute, second, format) {
+    generateCellClasses (year, month, day, hour, minute, second, format) {
       const maxDay = new Date(year, month + 1, 0).getDate()
       const currentDate = new Date(year, month, day > maxDay ? maxDay : day, hour, minute, second)
       const currentSeconds = this.parseToSeconds(currentDate)
