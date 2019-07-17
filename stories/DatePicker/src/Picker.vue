@@ -4,10 +4,10 @@
     <a :class="`${pre}-prev-decade-btn`" v-show="showYears" @click="preTenYears">«</a>
     <a :class="`${pre}-prev-year-btn`" v-show="!showYears" @click="preYear">«</a>
     <a :class="`${pre}-prev-month-btn`" v-show="!showYears&&!showMonths" @click="preMonth">‹</a>
-    <a :class="`${pre}-year-select`" v-show="showYears">{{ ys + '-' + ye }}</a>
+    <a :class="`${pre}-year-select`" v-show="showYears">{{ year + '-' + tenYears }}</a>
     <template v-if="local.yearSuffix">
-      <a :class="`${pre}-year-select`" @click="showYears=!showYears" v-show="!showYears">{{ year }}{{ local.yearSuffix }}</a>
-      <a :class="`${pre}-month-select`" @click="showMonths=!showMonths" v-show="!showYears && !showMonths">{{ local.monthsHead[month] }}</a>
+      <a :class="`${pre}-year-select`" @click="showYears = !showYears" v-show="!showYears">{{ year }}{{ local.yearSuffix }}</a>
+      <a :class="`${pre}-month-select`" @click="showMonths = !showMonths" v-show="!showYears && !showMonths">{{ local.monthsHead[month] }}</a>
     </template>
     <template v-else>
       <a :class="`${pre}-month-select`" @click="showMonths=!showMonths" v-show="!showYears && !showMonths">{{ local.monthsHead[month] }}</a>
@@ -20,17 +20,17 @@
   <div :class="`${pre}-body`">
     <div :class="`${pre}-days`">
       <a :class="`${pre}-week`" v-for="i in local.weeks"  :key="i">{{ i }}</a>
-      <a v-for="(j, i) in days" @click="selectDay(i, j, $event)" :class="[(j.p||j.n)?`${pre}-date-out`:'',status(j.y,j.m,j.i,hour,minute,second,'YYYYMMDD')]" :key="i">{{ j.i }}</a>
+      <a v-for="(day, i) in days" @click="selectDay(i, day, $event)" :class="[(day.p || day.n)?`${pre}-date-out`:'',status(day.y, day.m, day.i, hour, minute, second, 'YYYYMMDD')]" :key="i">{{ day.i }}</a>
     </div>
     <div :class="`${pre}-months`" v-show="showMonths">
-      <a v-for="(i, j) in local.months" @click="selectMonth(j, $event)" :class="[status(year, j, day, hour, minute, second, 'YYYYMM')]" :key="j">{{ i }}</a>
+      <a v-for="(monthText, month) in local.months" @click="selectMonth(month, $event)" :class="[status(year, month, day, hour, minute, second, 'YYYYMM')]" :key="month">{{ monthText }}</a>
     </div>
     <div :class="`${pre}-years`" v-show="showYears">
       <a v-for="(i, j) in years" @click="selectYear(i, $event)" :class="[(j === 0 || j === 11)?`${pre}-date-out`:'',status(i, month, day, hour, minute, second, 'YYYY')]" :key="j">{{ i }}</a>
     </div>
     <div :class="`${pre}-hours`" v-show="showHours">
       <div :class="`${pre}-title`">{{ local.hourTip }}</div>
-      <a v-for="(j, i) in 24" @click="selectHour(i, $event)" :class="[status(year,month,day,i,minute,second,'YYYYMMDDHH')]" :key="i">{{ i }}</a>
+      <a v-for="(j, i) in 24" @click="selectHour(i, $event)" :class="[status(year, month, day, i, minute, second, 'YYYYMMDDHH')]" :key="i">{{ i }}</a>
     </div>
     <div :class="`${pre}-minutes`" v-show="showMinutes">
       <div :class="`${pre}-title`">{{ local.minuteTip }}</div>
@@ -41,7 +41,7 @@
       <a v-for="(j, i) in 60" @click="selectSecond(i, $event)" :class="[status(year,month,day,hour,minute,i,'YYYYMMDDHHmmss')]" :key="i">{{ i }}</a>
     </div>
   </div>
-  <div :class="`${pre}-foot`" v-if="m === 'H'">
+  <div :class="`${pre}-foot`" v-if="formateType === 'H'">
     <div :class="`${pre}-hour`">
       <a :title="local.hourTip" @click="showHoursPicker" :class="{ on:showHours }">{{ hour | pad }}</a>
       <span>:</span>
@@ -57,17 +57,28 @@
 import { pad } from './utils'
 
 export default {
-  name: 'VueDatepickerLocalCalendar',
+  name: 'DatepickerCalendar',
+
   props: {
-    value: null,
-    left: false,
-    right: false
+    value: {
+      type: Date,
+      default: null
+    },
+    left: {
+      type: Boolean,
+      default: false
+    },
+    right: {
+      type: Boolean,
+      default: false
+    }
   },
+
   data () {
-    const time = this.formatDateByKey(this.value)
+    const time = this.formatDateToObject(this.value)
     return {
       pre: 'calendar',
-      m: 'D',
+      formateType: 'D',
       showYears: false,
       showMonths: false,
       showHours: false,
@@ -83,13 +94,20 @@ export default {
   },
   watch: {
     value (val) {
-      const time = this.formatDateByKey(val)
-      this.year = time.year
-      this.month = time.month
-      this.day = time.day
-      this.hour = time.hour
-      this.minute = time.minute
-      this.second = time.second
+      const {
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        second
+      } = this.formatDateToObject(val)
+      this.year = year
+      this.month = month
+      this.day = day
+      this.hour = hour
+      this.minute = minute
+      this.second = second
     }
   },
   computed: {
@@ -105,15 +123,12 @@ export default {
     end () {
       return this.parseToSeconds(this.$parent.dates[1])
     },
-    ys () {
-      return parseInt(this.year / 10) * 10
-    },
-    ye () {
-      return this.ys + 10
+    tenYears () {
+      return this.year + 10
     },
     years () {
       const arr = []
-      let start = this.ys - 1
+      let start = this.year - 1
       while (arr.length < 12) {
         arr.push(start++)
       }
@@ -163,7 +178,7 @@ export default {
     pad
   },
   methods: {
-    formatDateByKey (time) {
+    formatDateToObject (time) {
       return {
         year: time.getFullYear(),
         month: time.getMonth(),
@@ -178,23 +193,23 @@ export default {
     },
     status (year, month, day, hour, minute, second, format) {
       const maxDay = new Date(year, month + 1, 0).getDate()
-      const time = new Date(year, month, day > maxDay ? maxDay : day, hour, minute, second)
-      const t = this.parseToSeconds(time)
-      const f = this.$parent.formatDate
-      const classObj = {}
-      let flag = false
+      const currentDate = new Date(year, month, day > maxDay ? maxDay : day, hour, minute, second)
+      const currentSeconds = this.parseToSeconds(currentDate)
+      const formatDate = this.$parent.formatDate
+      const classMap = {}
+      let selected = false
       if (format === 'YYYY') {
-        flag = year === this.year
+        selected = year === this.year
       } else if (format === 'YYYYMM') {
-        flag = month === this.month
+        selected = month === this.month
       } else {
-        flag = f(this.value, format) === f(time, format)
+        selected = formatDate(this.value, format) === formatDate(currentDate, format)
       }
-      classObj[`${this.pre}-date`] = true
-      classObj[`${this.pre}-date-disabled`] = (this.right && t < this.start) || this.$parent.disabledDate(time, format)
-      classObj[`${this.pre}-date-on`] = (this.left && t > this.start) || (this.right && t < this.end)
-      classObj[`${this.pre}-date-selected`] = flag
-      return classObj
+      classMap[`${this.pre}-date`] = true
+      classMap[`${this.pre}-date-disabled`] = (this.right && currentSeconds < this.start) || this.$parent.disabledDate(currentDate, format)
+      classMap[`${this.pre}-date-on`] = (this.left && currentSeconds > this.start) || (this.right && currentSeconds < this.end)
+      classMap[`${this.pre}-date-selected`] = selected
+      return classMap
     },
     nextYear () {
       this.year += 1
@@ -244,16 +259,16 @@ export default {
     },
     selectYear (year, event) {
       if (this.canSelected(event)) {
-        this.showYears = this.m === 'Y'
+        this.showYears = this.formateType === 'Y'
         this.year = year
-        this.showYears && this.confirmSelect('y')
+        this.confirmSelect('y')
       }
     },
     selectMonth (month, event) {
       if (this.canSelected(event)) {
-        this.showMonths = this.m === 'M'
+        this.showMonths = this.formateType === 'M'
         this.month = month
-        this.showMonths && this.confirmSelect('m')
+        this.confirmSelect('m')
       }
     },
     selectDay (i, j, event) {
@@ -290,17 +305,18 @@ export default {
       info && info.n && this.nextMonth()
       info && info.p && this.preMonth()
       if (info === 'h') {
-        const time = this.formatDateByKey(this.value)
+        const time = this.formatDateToObject(this.value)
         year = time.year
         month = time.month
       } else if (info === 'm' || info === 'y') {
         day = 1
       }
-      const _time = new Date(year || this.year, month || this.month, day || this.day, this.hour, this.minute, this.second)
-      if (this.left && parseInt(_time.getTime() / 1000) > this.end) {
-        this.$parent.dates[1] = _time
+      const currentSelected = new Date(year || this.year, month || this.month, day || this.day, this.hour, this.minute, this.second)
+      const isStartDateOverEndDate = this.left && parseInt(currentSelected.getTime() / 1000) > this.end
+      if (isStartDateOverEndDate) {
+        this.$parent.dates[1] = currentSelected
       }
-      this.$emit('input', _time)
+      this.$emit('input', currentSelected)
       this.$parent.confirmSelect(info === 'h')
     }
   },
@@ -308,14 +324,14 @@ export default {
     const isIncludeFormatKey = formatKey => this.format.indexOf(formatKey) !== -1
 
     if (isIncludeFormatKey('s') && isIncludeFormatKey('m') && (isIncludeFormatKey('h') || isIncludeFormatKey('H'))) {
-      this.m = 'H'
+      this.formateType = 'H'
     } else if (isIncludeFormatKey('D')) {
-      this.m = 'D'
+      this.formateType = 'D'
     } else if (isIncludeFormatKey('M')) {
-      this.m = 'M'
+      this.formateType = 'M'
       this.showMonths = true
     } else if (isIncludeFormatKey('Y')) {
-      this.m = 'Y'
+      this.formateType = 'Y'
       this.showYears = true
     }
   }
