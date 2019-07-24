@@ -5,12 +5,12 @@
     <a :class="`${pre}-prev-year-btn`" v-show="!showYears" @click="preYear">«</a>
     <a :class="`${pre}-prev-month-btn`" v-show="!showYears&&!showMonths" @click="preMonth">‹</a>
     <a :class="`${pre}-year-select`" v-show="showYears">{{ year + '-' + tenYears }}</a>
-    <template v-if="local.yearSuffix">
-      <a :class="`${pre}-year-select`" @click="showYears = !showYears" v-show="!showYears">{{ year }}{{ local.yearSuffix }}</a>
-      <a :class="`${pre}-month-select`" @click="showMonths = !showMonths" v-show="!showYears && !showMonths">{{ local.monthsHead[month] }}</a>
+    <template v-if="option.yearSuffix">
+      <a :class="`${pre}-year-select`" @click="showYears = !showYears" v-show="!showYears">{{ year }}{{ option.yearSuffix }}</a>
+      <a :class="`${pre}-month-select`" @click="showMonths = !showMonths" v-show="!showYears && !showMonths">{{ option.monthsHead[month] }}</a>
     </template>
     <template v-else>
-      <a :class="`${pre}-month-select`" @click="showMonths=!showMonths" v-show="!showYears && !showMonths">{{ local.monthsHead[month] }}</a>
+      <a :class="`${pre}-month-select`" @click="showMonths=!showMonths" v-show="!showYears && !showMonths">{{ option.monthsHead[month] }}</a>
       <a :class="`${pre}-year-select`" @click="showYears=!showYears" v-show="!showYears">{{ year }}</a>
     </template>
     <a :class="`${pre}-next-month-btn`" v-show="!showYears&&!showMonths" @click="nextMonth">›</a>
@@ -22,7 +22,7 @@
   <div :class="`${pre}-body`">
     <!--date的选择面板-->
     <div :class="`${pre}-days`">
-      <a :class="`${pre}-week`" v-for="week in local.weeks"  :key="week">{{ week }}</a>
+      <a :class="`${pre}-week`" v-for="week in option.weeks"  :key="week">{{ week }}</a>
       <a
         :class="getCellDayClasses(day)" 
         v-for="(day, index) in days" 
@@ -43,14 +43,14 @@
     <div :class="`${pre}-months`" v-show="showMonths">
       <a
         :class="[generateCellClasses(year, month, day, hour, minute, second, 'YYYYMM')]" 
-        v-for="(monthText, month) in local.months" 
+        v-for="(monthText, month) in option.months" 
         @click="selectMonth(month, $event)" 
         :key="month">{{ monthText }}</a>
     </div>
   
     <!--hour的选择面板-->
     <div :class="`${pre}-hours`" v-show="showHours">
-      <div :class="`${pre}-title`">{{ local.hourTip }}</div>
+      <div :class="`${pre}-title`">{{ option.hourTip }}</div>
       <a 
         :class="[generateCellClasses(year, month, day, i, minute, second, 'YYYYMMDDHH')]"
         v-for="(j, i) in 24" 
@@ -60,7 +60,7 @@
 
     <!--minute的选择面板-->
     <div :class="`${pre}-minutes`" v-show="showMinutes">
-      <div :class="`${pre}-title`">{{ local.minuteTip }}</div>
+      <div :class="`${pre}-title`">{{ option.minuteTip }}</div>
       <a 
         :class="[generateCellClasses(year, month, day, hour, i, second, 'YYYYMMDDHHmm')]" 
         v-for="(j, i) in 60" 
@@ -70,7 +70,7 @@
 
     <!--second的选择面板-->
     <div :class="`${pre}-seconds`" v-show="showSeconds">
-      <div :class="`${pre}-title`">{{ local.secondTip }}</div>
+      <div :class="`${pre}-title`">{{ option.secondTip }}</div>
       <a 
         :class="[generateCellClasses(year, month, day, hour, minute, i, 'YYYYMMDDHHmmss')]" 
         v-for="(j, i) in 60" 
@@ -82,11 +82,11 @@
   <!--HH:mm:ss展示面板-->
   <div :class="`${pre}-foot`" v-if="formateType === 'H'">
     <div :class="`${pre}-hour`">
-      <a :title="local.hourTip" @click="showHoursPicker" :class="{ on:showHours }">{{ hour | pad }}</a>
+      <a :title="option.hourTip" @click="showHoursPicker" :class="{ on:showHours }">{{ hour | pad }}</a>
       <span>:</span>
-      <a :title="local.minuteTip" @click="showMinutesPicker" :class="{ on:showMinutes }">{{ minute | pad }}</a>
+      <a :title="option.minuteTip" @click="showMinutesPicker" :class="{ on:showMinutes }">{{ minute | pad }}</a>
       <span>:</span>
-      <a :title="local.secondTip" @click="showSecondsPicker" :class="{ on:showSeconds }">{{ second | pad }}</a>
+      <a :title="option.secondTip" @click="showSecondsPicker" :class="{ on:showSeconds }">{{ second | pad }}</a>
     </div>
   </div>
 </div>
@@ -150,8 +150,8 @@ export default {
     }
   },
   computed: {
-    local () {
-      return this.$parent.local
+    option () {
+      return this.$parent.option
     },
     format () {
       return this.$parent.format
@@ -178,7 +178,7 @@ export default {
       const year = this.year
       const month = this.month
       const time = new Date(year, month, 1)
-      const dow = this.local.dow || 7
+      const dow = this.option.dow || 7
       time.setDate(0) // switch to the last day of last month
       let lastDay = time.getDate()
       const week = time.getDay() || 7
@@ -194,15 +194,15 @@ export default {
       }
       time.setMonth(time.getMonth() + 2, 0) // switch to the last day of the current month
       lastDay = time.getDate()
-      let i = 1
-      for (i = 1; i <= lastDay; i++) {
+      
+      for (let i = 1; i <= lastDay; i++) {
         days.push({
           i: i,
           y: year,
           m: month
         })
       }
-      for (i = 1; days.length < 42; i++) {
+      for (let i = 1; days.length < 42; i++) {
         days.push({
           i: i,
           y: month < 11 ? year : year + 1,

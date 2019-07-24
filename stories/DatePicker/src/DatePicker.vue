@@ -16,20 +16,20 @@
         class="end-input"
         :class="inputClass" 
         :placeholder="endDatePlaceholder"/>   
-      <a class="datepicker-close" @click.stop="clear"></a>
+      <a class="date-picker-close" @click.stop="clear"></a>
     </div>
-    <transition name="datepicker-anim">
+    <transition name="date-picker-anim">
       <div class="date-picker-popup" :class="[popupClass]" tabindex="-1" v-if="show">
         <template v-if="type === 'daterange'">
           <picker-calendar v-model="dates[0]" :left="true"></picker-calendar>
           <picker-calendar v-model="dates[1]" :right="true"></picker-calendar>
         </template>
         <template v-else>
-          <vue-datepicker-local-calendar v-model="dates[0]"></vue-datepicker-local-calendar>
+          <picker-calendar v-model="dates[0]"></picker-calendar>
         </template>
-        <div v-if="showButtons" class="datepicker__buttons">
-          <button @click.prevent.stop="cancel" class="datepicker__button-cancel">{{ local.cancelTip }}</button>
-          <button @click.prevent.stop="submit" class="datepicker__button-select">{{ local.submitTip }}</button>
+        <div v-if="showButtons" class="date-picker__buttons">
+          <button @click.prevent.stop="cancel" class="date-picker__button-cancel">{{ option.cancelTip }}</button>
+          <button @click.prevent.stop="submit" class="date-picker__button-select">{{ option.submitTip }}</button>
         </div>
       </div>
     </transition>  
@@ -38,7 +38,7 @@
 
 <script>
 import { pad } from './utils'
-import { DEFAULT_LOCAL } from './utils/constants'
+import { DEFAULT_OPTION } from './utils/constants'
 
 import PickerCalendar from './Picker'
 
@@ -101,9 +101,9 @@ export default {
 
     popupClass: String,
 
-    local: {
+    option: {
       type: Object,
-      default: () => (DEFAULT_LOCAL)
+      default: () => (DEFAULT_OPTION)
     }
   },
 
@@ -161,8 +161,8 @@ export default {
       const map = {
         YYYY: year,
         MM: pad(month + 1),
-        MMM: this.local.months[month],
-        MMMM: this.local.monthsHead[month],
+        MMM: this.option.months[month],
+        MMMM: this.option.monthsHead[month],
         M: month + 1,
         DD: pad(day),
         D: day,
