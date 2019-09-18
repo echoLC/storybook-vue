@@ -1,4 +1,4 @@
-# storybook-vue
+# Storybook-Vue
 
 ## Project setup
 ```
