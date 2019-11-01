@@ -1,5 +1,5 @@
 import { storiesOf } from '@storybook/vue'
-import DatePicker from './src/DatePicker.vue'
+import DatePicker from './src/datepicker'
 
 storiesOf('DatePicker', module)
   .add('basic date picker', () => ({
@@ -11,5 +11,5 @@ storiesOf('DatePicker', module)
         date: []
       }
     },
-    template: `<date-picker v-model="date" type="daterange" format="YYYY-MM-DD"></date-picker>`
+    template: `<datepicker v-model="date" type="daterange" format="YYYY-MM-DD"></datepicker>`
   }))
