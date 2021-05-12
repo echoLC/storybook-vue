@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "codemirror": "^5.42.0",
+    "codemirror": "^5.58.2",
     "tui-editor": "^1.2.7",
     "vue": "^2.5.17"
   },
